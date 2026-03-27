@@ -6,8 +6,8 @@ from CTFd.utils.logging import log
 
 supabase_sso = Blueprint("supabase_sso", __name__)
 
-SUPABASE_URL = "https://nxbvkoltbuowearddemd.supabase.co"
-SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY")
+SUPABASE_URL = os.environ.get("SUPABASE_LEARN_URL")
+SUPABASE_ANON_KEY = os.environ.get("SUPABASE_LEARN_ANON_KEY")
 
 def load(app):
     app.register_blueprint(supabase_sso)
