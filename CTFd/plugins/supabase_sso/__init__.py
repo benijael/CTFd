@@ -15,6 +15,10 @@ ADMIN_SECRET = os.environ.get("ADMIN_LOGIN_SECRET", "soopha2025")
 def load(app):
     app.register_blueprint(supabase_sso)
 
+    # Override les routes natives CTFd
+    app.view_functions["auth.login"] = redirect_login
+    app.view_functions["auth.register"] = redirect_register
+
 
 @supabase_sso.route("/login", methods=["GET"])
 def redirect_login():
