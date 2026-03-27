@@ -11,24 +11,30 @@ SUPABASE_URL = os.environ.get("SUPABASE_LEARN_URL", "https://jxeytuqzrymtmekqvpv
 SUPABASE_ANON_KEY = os.environ.get("SUPABASE_LEARN_ANON_KEY")
 ADMIN_SECRET = os.environ.get("ADMIN_LOGIN_SECRET", "soopha2025")
 
+
 def load(app):
     app.register_blueprint(supabase_sso)
 
+
 @supabase_sso.route("/login", methods=["GET"])
 def redirect_login():
-    # Déjà connecté
     if get_current_user():
         return redirect("/")
-    # Accès admin direct via ?secret=VALEUR
     if request.args.get("secret") == ADMIN_SECRET:
         return redirect("/admin-native-login")
-    # Tout le monde else → SooPHA Learn
     return redirect("https://soopha-learn.com/pages/dashboard.html")
+
+
+@supabase_sso.route("/register", methods=["GET", "POST"])
+def redirect_register():
+    return redirect("https://soopha-learn.com/pages/dashboard.html")
+
 
 @supabase_sso.route("/admin-native-login", methods=["GET", "POST"])
 def admin_native_login():
     from CTFd.auth import login as ctfd_login
     return ctfd_login()
+
 
 @supabase_sso.route("/sso/supabase", methods=["GET"])
 def supabase_login():
