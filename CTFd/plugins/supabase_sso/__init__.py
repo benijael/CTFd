@@ -1,5 +1,5 @@
-import jwt
 import os
+import requests
 from flask import Blueprint, redirect, request, session
 from CTFd.models import Users, db
 from CTFd.utils.logging import log
@@ -7,11 +7,11 @@ from CTFd.utils.logging import log
 supabase_sso = Blueprint("supabase_sso", __name__)
 
 SUPABASE_URL = "https://nxbvkoltbuowearddemd.supabase.co"
-SUPABASE_JWT_SECRET = os.environ.get("SUPABASE_JWT_SECRET")
+SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY")
 
 def load(app):
     app.register_blueprint(supabase_sso)
-    print("[supabase_sso] Supabase SSO plugin loaded")  # ← seul changement
+    print("[supabase_sso] Supabase SSO plugin loaded")
 
 @supabase_sso.route("/sso/supabase", methods=["GET"])
 def supabase_login():
@@ -20,25 +20,27 @@ def supabase_login():
     if not token:
         return redirect("/login?error=missing_token")
 
-    try:
-        payload = jwt.decode(
-            token,
-            SUPABASE_JWT_SECRET,
-            algorithms=["HS256"],
-            options={"verify_aud": False}
-        )
-    except jwt.ExpiredSignatureError:
-        return redirect("/login?error=token_expired")
-    except jwt.InvalidTokenError as e:
-        log("supabase_sso", f"Invalid token: {e}")
+    # Valide le token via l'API Supabase — pas de vérification JWT locale
+    resp = requests.get(
+        f"{SUPABASE_URL}/auth/v1/user",
+        headers={
+            "Authorization": f"Bearer {token}",
+            "apikey": SUPABASE_ANON_KEY
+        }
+    )
+
+    if resp.status_code != 200:
+        log("supabase_sso", f"Token validation failed: {resp.status_code}")
         return redirect("/login?error=invalid_token")
 
-    email = payload.get("email")
-    user_id = payload.get("sub")
+    user_data = resp.json()
+    email = user_data.get("email")
+    user_id = user_data.get("id")
 
     if not email:
         return redirect("/login?error=no_email")
 
+    # Cherche ou crée l'utilisateur CTFd
     user = Users.query.filter_by(email=email).first()
 
     if not user:
@@ -64,3 +66,10 @@ def supabase_login():
 
     log("supabase_sso", f"SSO login: {email}")
     return redirect("/")
+```
+
+## Dans Railway — ajoute la variable SUPABASE_ANON_KEY
+
+Railway → service **CTFd** → **Variables** → **New Variable** :
+```
+SUPABASE_ANON_KEY = ta_clé_anon_public_supabase
