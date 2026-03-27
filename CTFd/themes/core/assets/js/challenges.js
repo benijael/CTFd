@@ -16,6 +16,22 @@ function addTargetBlank(html) {
   return view.documentElement.outerHTML;
 }
 
+function injectQCMButton(html) {
+  const qcmBtn = `
+    <div style="margin-top:1.5rem;text-align:center;padding:1rem 0;border-top:1px solid rgba(0,255,136,0.15)">
+      <a href="https://soopha-learn.com/pages/qcm.html"
+         target="_blank"
+         style="display:inline-block;padding:0.6rem 1.5rem;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.4);color:#00ff88;font-family:monospace;font-size:0.85rem;letter-spacing:0.08em;text-decoration:none;cursor:pointer;transition:all 0.2s"
+         onmouseover="this.style.background='rgba(0,255,136,0.2)'"
+         onmouseout="this.style.background='rgba(0,255,136,0.1)'">
+        📝 Commencer le QCM
+      </a>
+    </div>`;
+
+  // Inject before the closing body tag
+  return html.replace("</body>", qcmBtn + "</body>");
+}
+
 window.Alpine = Alpine;
 
 Alpine.store("challenge", {
@@ -108,10 +124,6 @@ Alpine.data("Challenge", () => ({
       console.log(error);
     }
     return styles;
-  },
-
-  async init() {
-    highlight();
   },
 
   async showChallenge() {
@@ -339,6 +351,13 @@ Alpine.data("ChallengeBoard", () => ({
   async loadChallenge(challengeId) {
     await CTFd.pages.challenge.displayChallenge(challengeId, challenge => {
       challenge.data.view = addTargetBlank(challenge.data.view);
+
+      // Inject QCM button for ÉVALUATION category
+      const cat = (challenge.data.category || "").toUpperCase();
+      if (cat === "ÉVALUATION" || cat === "EVALUATION") {
+        challenge.data.view = injectQCMButton(challenge.data.view);
+      }
+
       Alpine.store("challenge").data = challenge.data;
 
       // nextTick is required here because we're working in a callback
