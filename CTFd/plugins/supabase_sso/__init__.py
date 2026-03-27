@@ -16,11 +16,13 @@ def load(app):
 @supabase_sso.route("/sso/supabase", methods=["GET"])
 def supabase_login():
     token = request.args.get("token")
+    print(f"[SSO] Token reçu: {token[:20] if token else 'None'}...")
 
     if not token:
         return redirect("/login?error=missing_token")
 
-    # Valide le token via l'API Supabase — pas de vérification JWT locale
+    print(f"[SSO] ANON_KEY: {SUPABASE_ANON_KEY[:10] if SUPABASE_ANON_KEY else 'NOT SET'}...")
+
     resp = requests.get(
         f"{SUPABASE_URL}/auth/v1/user",
         headers={
@@ -28,6 +30,8 @@ def supabase_login():
             "apikey": SUPABASE_ANON_KEY
         }
     )
+
+    print(f"[SSO] Supabase response: {resp.status_code} — {resp.text[:200]}")
 
     if resp.status_code != 200:
         log("supabase_sso", f"Token validation failed: {resp.status_code}")
