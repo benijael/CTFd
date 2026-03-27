@@ -48,23 +48,28 @@ def supabase_login():
     user = Users.query.filter_by(email=email).first()
 
     if not user:
-        username = email.split("@")[0]
-        base = username
-        counter = 1
-        while Users.query.filter_by(name=username).first():
-            username = f"{base}{counter}"
-            counter += 1
+    username = email.split("@")[0]
+    base = username
+    counter = 1
+    while Users.query.filter_by(name=username).first():
+        username = f"{base}{counter}"
+        counter += 1
 
+    try:
+        db.session.rollback()  # nettoie toute transaction en attente
         user = Users(
             name=username,
             email=email,
-            verified=True,
-            oauth_id=user_id
+            verified=True
         )
         db.session.add(user)
         db.session.commit()
-        log("supabase_sso", f"Created user {email}")
-
+        print(f"[SSO] Created user {email}")
+    except Exception as e:
+        db.session.rollback()
+        print(f"[SSO] Error creating user: {e}")
+        return redirect("/login?error=creation_failed")
+        
     session["id"] = user.id
     session["nonce"] = user.password
 
