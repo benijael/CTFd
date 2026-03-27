@@ -66,10 +66,3 @@ def supabase_login():
 
     log("supabase_sso", f"SSO login: {email}")
     return redirect("/")
-```
-
-## Dans Railway — ajoute la variable SUPABASE_ANON_KEY
-
-Railway → service **CTFd** → **Variables** → **New Variable** :
-```
-SUPABASE_ANON_KEY = ta_clé_anon_public_supabase
