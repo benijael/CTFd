@@ -11,12 +11,12 @@ SUPABASE_ANON_KEY = os.environ.get("SUPABASE_LEARN_ANON_KEY")
 
 def load(app):
     app.register_blueprint(supabase_sso)
-    print("[supabase_sso] Supabase SSO plugin loaded")
+    
 
 @supabase_sso.route("/sso/supabase", methods=["GET"])
 def supabase_login():
     token = request.args.get("token")
-    print(f"[SSO] Token reçu: {token[:20] if token else 'None'}...")
+    
 
     if not token:
         return redirect("/login?error=missing_token")
@@ -29,7 +29,7 @@ def supabase_login():
         }
     )
 
-    print(f"[SSO] Supabase response: {resp.status_code}")
+    
 
     if resp.status_code != 200:
         return redirect("/login?error=invalid_token")
@@ -58,10 +58,9 @@ def supabase_login():
             )
             db.session.add(user)
             db.session.commit()
-            print(f"[SSO] Created user {email}")
+            
         except Exception as e:
             db.session.rollback()
-            print(f"[SSO] Error creating user: {e}")
             return redirect("/login?error=creation_failed")
 
     session["id"] = user.id
