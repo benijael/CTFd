@@ -1,20 +1,17 @@
-
 import jwt
-import requests
-from flask import Blueprint, redirect, request, session, url_for
+import os
+from flask import Blueprint, redirect, request, session
 from CTFd.models import Users, db
-from CTFd.utils import get_config
 from CTFd.utils.logging import log
 
 supabase_sso = Blueprint("supabase_sso", __name__)
 
 SUPABASE_URL = "https://nxbvkoltbuowearddemd.supabase.co"
-SUPABASE_JWT_SECRET = "TON_LEGACY_JWT_SECRET_ICI"
+SUPABASE_JWT_SECRET = os.environ.get("SUPABASE_JWT_SECRET")
 
 def load(app):
     app.register_blueprint(supabase_sso)
-    log("supabase_sso", "Supabase SSO plugin loaded")
-
+    print("[supabase_sso] Supabase SSO plugin loaded")  # ← seul changement
 
 @supabase_sso.route("/sso/supabase", methods=["GET"])
 def supabase_login():
@@ -24,7 +21,6 @@ def supabase_login():
         return redirect("/login?error=missing_token")
 
     try:
-        # Vérifie et décode le JWT Supabase
         payload = jwt.decode(
             token,
             SUPABASE_JWT_SECRET,
@@ -43,13 +39,10 @@ def supabase_login():
     if not email:
         return redirect("/login?error=no_email")
 
-    # Cherche l'utilisateur existant
     user = Users.query.filter_by(email=email).first()
 
     if not user:
-        # Crée l'utilisateur automatiquement
         username = email.split("@")[0]
-        # Évite les doublons de username
         base = username
         counter = 1
         while Users.query.filter_by(name=username).first():
@@ -66,9 +59,8 @@ def supabase_login():
         db.session.commit()
         log("supabase_sso", f"Created user {email}")
 
-    # Connecte l'utilisateur
     session["id"] = user.id
-    session["nonce"] = user.password  # nonce CTFd
+    session["nonce"] = user.password
 
     log("supabase_sso", f"SSO login: {email}")
     return redirect("/")
