@@ -16,6 +16,7 @@ function addTargetBlank(html) {
   return view.documentElement.outerHTML;
 }
 
+
 function injectQCMButton(html) {
   const qcmBtn = `
     <div style="margin-top:1.5rem;text-align:center;padding:1rem 0;border-top:1px solid rgba(0,255,136,0.15)">
