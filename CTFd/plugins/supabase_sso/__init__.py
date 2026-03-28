@@ -9,7 +9,7 @@ supabase_sso = Blueprint("supabase_sso", __name__)
 
 SUPABASE_URL = os.environ.get("SUPABASE_LEARN_URL", "https://jxeytuqzrymtmekqvpvg.supabase.co")
 SUPABASE_ANON_KEY = os.environ.get("SUPABASE_LEARN_ANON_KEY")
-ADMIN_SECRET = os.environ.get("ADMIN_LOGIN_SECRET", "soopha2025")
+ADMIN_SECRET = os.environ.get("ADMIN_LOGIN_SECRET", "85lzedlgvFYoxtTM1gwvnuO#g1pWSBS4FjPP+mVVguk3VnNLryUdRz5bIQzXfQVguo9fDSiTTUHnY81FtIjIkw==")
 
 
 def load(app):
